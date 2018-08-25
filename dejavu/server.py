@@ -11,7 +11,7 @@ from dejavu.recognize import FileRecognizer
 
 warnings.filterwarnings("ignore")
 
-from flask import Flask, request, redirect, url_for, send_from_directory
+from flask import Flask, request, redirect, url_for, send_from_directory, jsonify
 from werkzeug import secure_filename
 
 UPLOAD_FOLDER = './data'
@@ -62,10 +62,8 @@ def fingerprint():
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
-        print 'New file saved with path :', filepath
-        print 'Starting fingerprint of the file :', filepath
         Fingerprint(filepath).start()
-        return 'The song will be fingerprinted is few minutes. Immediate recognition may not work.'
+        return 'Fingeprint of the song is currently scheduled. The song will be ready in few minutes for recorgnition.'
     return 'The file extension is not allowed'
 
 @app.route('/recorgnize', methods=['POST'])
@@ -75,7 +73,7 @@ def recorgnize():
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
-        return djv.recognize(FileRecognizer, filepath)
+        return jsonify(djv.recognize(FileRecognizer, filepath))
     return 'The file extension is not allowed'
 
 if __name__ == '__main__':
