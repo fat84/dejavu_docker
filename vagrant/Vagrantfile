@@ -1,0 +1,43 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$script = <<-SCRIPT
+sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Paris /etc/
+
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum install docker-ce -y
+sudo systemctl start docker
+
+sudo docker pull mysql
+sudo docker pull phpmyadmin/phpmyadmin
+
+MYSQL_ROOT_PASSWORD=dejavu
+MYSQL_USER=dejavu
+MYSQL_PASSWORD=dejavu
+MYSQL_DATABASE=dejavu
+MYSQL_CONTAINER_NAME=dejavu_mysql
+
+sudo yum install -y git
+git clone https://github.com/ahmedalami/dejavu_docker
+cd dejavu_docker
+sudo docker build -t dejavu/server .
+
+sudo docker run --name ${MYSQL_CONTAINER_NAME} --detach --env MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} --env MYSQL_USER=${MYSQL_USER} --env MYSQL_PASSWORD=${MYSQL_PASSWORD} --env MYSQL_DATABASE=${MYSQL_DATABASE} --publish 3306:3306 mysql --default_authentication_plugin=mysql_native_password
+sudo docker run --name myadmin --detach --link $MYSQL_CONTAINER_NAME:db --publish 8081:80 phpmyadmin/phpmyadmin
+sudo docker run --name dejavu_server --detach --link $MYSQL_CONTAINER_NAME:mysql --publish 8080:8080 dejavu/server
+SCRIPT
+
+Vagrant.configure("2") do |config|
+
+    config.vm.provision "shell", inline: $script
+
+    config.vm.network "forwarded_port", guest: 8080, host: 8080
+    config.vm.network "forwarded_port", guest: 8081, host: 8081
+
+    config.vm.box = "centos/7"
+    config.vm.provider "virtualbox" do |v|
+        v.memory = 2048
+        v.cpus = 2
+    end
+end
