@@ -15,7 +15,7 @@ from flask import Flask, request, redirect, url_for, send_from_directory, jsonif
 from werkzeug import secure_filename
 
 UPLOAD_FOLDER = './data'
-ALLOWED_EXTENSIONS = set(['mp3'])
+ALLOWED_EXTENSIONS = set(['mp3', 'wav'])
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs( UPLOAD_FOLDER, 0755 );
 
@@ -60,7 +60,7 @@ class Fingerprint_Directory(Thread):
         self.filepath = filepath
 
     def run(self):
-        djv.fingerprint_directory(self.filepath, ["." + extension], 4)
+        djv.fingerprint_directory(self.filepath, [".mp3", ".wav"], 4)
 
 @app.route('/fingerprint', methods=['POST'])
 def fingerprint():
