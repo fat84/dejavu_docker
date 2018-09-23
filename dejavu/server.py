@@ -54,6 +54,14 @@ class Fingerprint(Thread):
     def run(self):
         djv.fingerprint_file(self.filepath)
 
+class Fingerprint_Directory(Thread):
+    def __init__(self, filepath):
+        Thread.__init__(self)
+        self.filepath = filepath
+
+    def run(self):
+        djv.fingerprint_directory(self.filepath, ["." + extension], 4)
+
 @app.route('/fingerprint', methods=['POST'])
 def fingerprint():
     file = request.files['file']
@@ -65,6 +73,12 @@ def fingerprint():
         Fingerprint(filepath).start()
         return 'Fingeprint of the song is currently scheduled. The song will be ready in few minutes for recorgnition.'
     return 'The file extension is not allowed'
+
+
+@app.route('/fingerprint/bulk', methods=['POST'])
+def fingerprint_bulk():
+    Fingerprint_Directory('/data/library').start()
+    return 'Fingeprint of the directory is currently scheduled.'
 
 @app.route('/recorgnize', methods=['POST'])
 def recorgnize():
