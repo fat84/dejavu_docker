@@ -4,8 +4,6 @@
 $script = <<-SCRIPT
 sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Paris /etc/
 
-sudo mkdirp -p /data/library
-
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 sudo yum install docker-ce -y
