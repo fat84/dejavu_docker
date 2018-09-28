@@ -3,6 +3,7 @@
 cd vagrant
 vagrant plugin install vagrant-hostmanager
 vagrant plugin install vagrant-vbguest
+export DEJA_VU_LIBRARY=/data/library/mp3
 vagrant up
 ```
 
