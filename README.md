@@ -7,6 +7,10 @@ export DEJA_VU_LIBRARY=/data/library/mp3
 vagrant up
 ```
 
+vagrant ssh -c "chmod +x /vagrant/provision.sh"
+vagrant ssh -c "/vagrant/provision.sh"
+
+
 When finished, use a HTTP/REST client like Postman to verify the fingerprint and recorgnize endpoints :
 ```
 curl -F ‘data=@dejavu/mp3/Brad-Sucks--Total-Breakdown.mp3’ http://localhost:8080/fingerprint

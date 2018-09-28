@@ -60,7 +60,7 @@ class Fingerprint_Directory(Thread):
         self.filepath = filepath
 
     def run(self):
-        djv.fingerprint_directory(self.filepath, [".mp3", ".wav"], 4)
+        djv.fingerprint_directory(self.filepath, [".mp3", ".wav"], 1)
 
 @app.route('/fingerprint', methods=['POST'])
 def fingerprint():
