@@ -1,0 +1,68 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$script = <<-SCRIPT
+sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Paris /etc/
+
+echo "Installing Docker ..."
+sudo dnf -y install dnf-plugins-core
+sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+sudo yum install docker-ce -y
+sudo systemctl start docker
+sudo systemctl enable docker
+
+
+echo "Installing MySQL and PHPMyAdmin ..."
+sudo docker pull mysql:5.7
+sudo docker pull phpmyadmin/phpmyadmin
+
+MYSQL_ROOT_PASSWORD=dejavu
+MYSQL_USER=dejavu
+MYSQL_PASSWORD=dejavu
+MYSQL_DATABASE=dejavu
+MYSQL_CONTAINER_NAME=dejavu_mysql
+
+sudo mkdir -p /opt/mysql/data
+
+sudo docker run --name ${MYSQL_CONTAINER_NAME} -v /opt/mysql/data:/var/lib/mysql --detach --env MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} --env MYSQL_USER=${MYSQL_USER} --env MYSQL_PASSWORD=${MYSQL_PASSWORD} --env MYSQL_DATABASE=${MYSQL_DATABASE} --publish 3306:3306 mysql:5.7 --default_authentication_plugin=mysql_native_password
+sudo docker run --name phpmyadmin --detach --link $MYSQL_CONTAINER_NAME:db --publish 8081:80 phpmyadmin/phpmyadmin
+
+sudo dnf install python MySQL-python numpy scipy python-matplotlib portaudio-devel python-pip gcc -y
+sudo dnf localinstall https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
+sudo dnf install ffmpeg ffmpeg-devel -y
+sudo dnf clean all
+
+sudo pip install PyAudio
+sudo pip install pydub
+sudo pip install virtualenv
+sudo pip install Flask
+
+sudo dnf install -y git
+git clone https://github.com/ahmedalami/dejavu_docker
+cat <<EOF >dejavu_docker/dejavu/dejavu.cnf
+{
+    "database": {
+        "host": "127.0.01",
+        "user": "dejavu",
+        "passwd": "dejavu",
+        "db": "dejavu"
+    }
+}
+EOF
+
+SCRIPT
+
+Vagrant.configure("2") do |config|
+
+    config.vm.provision "shell", inline: $script
+
+    config.vm.network "forwarded_port", guest: 8081, host: 8081
+
+    config.vm.synced_folder ENV['DEJA_VU_LIBRARY'], "/data/library"
+
+    config.vm.box = "generic/fedora28"
+    config.vm.provider "virtualbox" do |v|
+        v.memory = 2048
+        v.cpus = 4
+    end
+end
